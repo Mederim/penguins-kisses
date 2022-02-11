@@ -1,0 +1,10 @@
+cat <<EOF >/mnt/root/.profife
+export KISS_PATH=''
+KISS_PATH=$KISS_PATH:/etc/repo/core
+KISS_PATH=$KISS_PATH:/etc/repo/extra
+KISS_PATH=$KISS_PATH:/etc/repo/testing
+KISS_PATH=$KISS_PATH:/etc/repo/wayland
+export CFLAGS="-O3 -pipe -march=native"
+export CXXFLAGS="$CFLAGS"
+export MAKEFLAGS="-j$(nproc)"
+<<EOF

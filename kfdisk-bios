@@ -1,0 +1,6 @@
+fdisk /dev/sda
+parted --script /dev/sda mklabel msdos 
+parted --script --align optimal /dev/sda mkpart primary 1MiB 95% 
+parted --script /dev/sda set 1 boot on
+parted --script --align optimal /dev/sda mkpart primary 95% 100%
+

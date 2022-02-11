@@ -1,0 +1,6 @@
+parted --script /dev/sda mklabel gpt
+parted --script /dev/sda mkpart efi 0% 1% 
+parted --script /dev/sda mkpart root 1% 95%
+parted --script /dev/sda mkpart swap linux-swap 95%
+parted --script /dev/sda set 1 boot
+parted --script /dev/sda set 1 esp on 
