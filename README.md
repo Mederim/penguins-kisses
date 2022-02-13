@@ -1,5 +1,5 @@
-# dotfiles
-I'm trying to find a way... 
+# README
+I'm trying to find a way: still again a work in progress...
 
 * Created 12/2/2022 forking [Medirim/dotfiles](https://github.com/Mederim/dotfiles)
 * Update 13/2/2022 following [K1SS - KISS Linux 9.2 UEFI Installation - Kernel 5.9.8
