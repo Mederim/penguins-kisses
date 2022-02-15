@@ -271,6 +271,40 @@ Compiliamo l'accrocco...
 make -j "$(nproc)"
 ```
 
+this we have: :-(
+```
+ make -j4
+  DESCEND objtool
+  CALL    scripts/atomic/check-atomics.sh
+  CALL    scripts/checksyscalls.sh
+diff: unrecognized option: I
+BusyBox v1.34.1 (2022-02-15 12:03:37 UTC) multi-call binary.
+
+Usage: diff [-abBdiNqrTstw] [-L LABEL] [-S FILE] [-U LINES] FILE1 FILE2
+...
+/usr/include/linux/swab.h:136:23: error: expected ';' before 'unsigned'
+  136 | static __always_inline unsigned long __swab(const unsigned long y)
+      |                       ^~~~~~~~~
+      |                       ;
+/usr/include/linux/swab.h:171:8: error: unknown type name '__always_inline'
+  171 | static __always_inline __u16 __swab16p(const __u16 *p)
+      |        ^~~~~~~~~~~~~~~
+/usr/include/linux/swab.h:171:30: error: expected '=', ',', ';', 'asm' or '__attribute__' before '__swab16p'
+  171 | static __always_inline __u16 __swab16p(const __u16 *p)
+      |                              ^~~~~~~~~
+/usr/include/linux/swab.h:184:8: error: unknown type name '__always_inline'
+  184 | static __always_inline __u32 __swab32p(const __u32 *p)
+...
+make[4]: *** [/root/linux-5.16.4/tools/build/Makefile.build:97: /root/linux-5.16.4/tools/objtool/arch/x86/decode.o] Error 1
+make[3]: *** [/root/linux-5.16.4/tools/build/Makefile.build:139: arch/x86] Error 2
+make[2]: *** [Makefile:56: /root/linux-5.16.4/tools/objtool/objtool-in.o] Error 2
+make[1]: *** [Makefile:69: objtool] Error 2
+make: *** [Makefile:1349: tools/objtool] Error 2
+~/linux-5.16.4 # 
+```
+
+
+
 
 
 ```
