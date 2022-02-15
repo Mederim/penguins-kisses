@@ -1,17 +1,25 @@
 # README
-I'm trying to find a way: still again a work in progress...
+
+I'm trying to find a way to kisslinux: this is still again a work in progress...
 
 * Created 12/2/2022 forking [Medirim/dotfiles](https://github.com/Mederim/dotfiles)
 * Update 13/2/2022 following [K1SS - KISS Linux 9.2 UEFI Installation - Kernel 5.9.8
 ](https://www.youtube.com/watch?v=kZYcfT0WcCo)
-* Started to follow [Mederim/kiss-waydroid](https://github.com/Mederim/kiss-waydroid)
-
-
 * Update 13/2/2022 following [K1SS - KISS Linux version 2021.7-9 UEFI Installation - Kernel 5.14.8
 ](https://www.youtube.com/watch?v=QCjjFqC-Ve8&t=0s)
+* Started to follow [Mederim/kiss-waydroid](https://github.com/Mederim/kiss-waydroid)
 
+# Foreword
 
-# Premilary
+I need just to build a little system, most little is better. 
+No need X, Wayland nothing exept console.
+
+I want try to see if will be possible from a minimal installation of kisslinux, get this installation reproducible using my tool: penguins-eggs.
+
+Unfortunately, after 3 days I'm again on the point to be uncapable to build a minimun, possibly generic kernel for a KVM machine.
+
+# Before you start
+After many tempts I choose to follow the second video where 
 
 ## Download archiso
 You can downloads last [Arch Linux install](https://archlinux.org/download/) and follow the instructions.
@@ -124,14 +132,18 @@ KISS_PATH=$KISS_PATH:/var/community/community
 ```
 git clone https://github.com/kisslinux/repo
 sudo mv repo /var/
+```
 
+# [007a] Setup community repositury
+```
 git clone https://github.com/kiss-community/community
 sudo mv community /var
 
 ```
 # [009] Set KISS_PATH
+We did it previusly.
 
-We did it previusly..
+```KISS_PATH=:/var/repo/core:/var/repo/extra:/var/repo/wayland:/var/community/community```
 
 # [010] Enable Signature Verification
 # [011] Build And Install GPG 
@@ -156,9 +168,9 @@ git config merge.verifySignatures true
 We did it previusly.
 
 ```
-export CFLAGS="-O3 -pipe -march=native"                                |
-export CXXFLAGS="$CFLAGS"
-export MAKEFLAGS="-j4"
+CFLAGS=-O3 -pipe -march=native
+CXXFLAGS=-O3 -pipe -march=native
+MAKEFLAGS=-j4
 ```
 
 # [016] Update All Base Packages To The Latest Version
@@ -203,11 +215,66 @@ then, again try to build:
 cd /var/db/kiss/installed && kiss build *
 ```
 
+# [018] The Kernel
+________________________________________________________________________________
+
+This step involves configuring and building your own Linux kernel. The Linux
+kernel is not managed by the distribution and is instead the user's sole
+responsibility.
+
+I choose the same kernel I have in the live.
+
+from the host
+```
+cd /mnt/root
+wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.16.4.tar.xz
+```
+
+```
+tar xvf linux-5.16.4.tar.xz
+cd linux-5.16.4
+
+```
+## [020] Download Firmware Blobs (If Required)
+
+## [021] Configure The Kernel
+
+**IMPORTANT** : Apply this patch before
+
+```
+sed '/<stdlib.h>/a #include <linux/stddef.h>' \
+tools/objtool/arch/x86/decode.c > _
+
+mv -f _ tools/objtool/arch/x86/decode.c    
+```
+
+make defconfig
+
+kiss b libelf
+
+## [022] Install Required Packages
+
+
+## [023] perl
+```
+kiss b perl
+```
+## [024] libelf
+kiss b libelf
+
+## [025] Build The Kernel 
+
+```
+make -j4
+```
+
+## [028] Install Kernel Image
+
+
 Installing some others
 ```
 kiss b e2fsprogs
 kiss b dosfstools
-kiss b xfsprogs // manca
 ```
 device manager
 
@@ -226,23 +293,13 @@ hostname
 ```
 echo "kisslinux" > /etc/hostname
 ```
-kiss b libelf
-kiss b ncurses
-kiss b perl
+
+Other libraries
+```
 ```
 
 # [018] The Kernel
 
-from the host
-```
-cd /mnt/root
-wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.16.4.tar.xz
-```
-```
-tar xvf linux-5.16.4.tar.xz
-cd linux-5.16.4
-
-```
 make defconfig
 ```
 ci crea .config
