@@ -255,9 +255,9 @@ lspci -k
 from make help, we find the option localyesconfig
 
 ### localyesconfig
-```
- Update current config converting local mods to core except those preserved by LMC_KEEP environment variable
-```
+Update current config converting local mods to core except those preserved by LMC_KEEP environment variable.
+
+
 
 so, we use localyesconfig to configure our kernel
 ```
