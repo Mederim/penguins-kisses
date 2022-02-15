@@ -230,12 +230,15 @@ cd /mnt/root
 wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.16.4.tar.xz
 ```
 
+from chrooted
 ```
+cd root
 tar xvf linux-5.16.4.tar.xz
 cd linux-5.16.4
 
 ```
 ## [020] Download Firmware Blobs (If Required)
+**no need**
 
 ## [021] Configure The Kernel
 
@@ -248,12 +251,7 @@ tools/objtool/arch/x86/decode.c > _
 mv -f _ tools/objtool/arch/x86/decode.c    
 ```
 
-make defconfig
-
-kiss b libelf
-
 ## [022] Install Required Packages
-
 
 ## [023] perl
 ```
@@ -264,6 +262,9 @@ kiss b libelf
 
 ## [025] Build The Kernel 
 
+make defconfig
+
+
 ```
 make -j4
 ```
@@ -271,7 +272,7 @@ make -j4
 ## [028] Install Kernel Image
 
 
-Installing some others
+Installing some others things
 ```
 kiss b e2fsprogs
 kiss b dosfstools
@@ -294,17 +295,6 @@ hostname
 echo "kisslinux" > /etc/hostname
 ```
 
-Other libraries
-```
-```
-
-# [018] The Kernel
-
-make defconfig
-```
-ci crea .config
-
-
 ```
 lspci -k
 ```
@@ -321,56 +311,20 @@ so, we use localyesconfig to configure our kernel
 make localyesconfig
 ```
 
-## Puttana EVA!!!
 compiling kernel...
 
 ```
 make -j "$(nproc)"
 ```
 
-this we have: :-(
-```
-# make -j4
-
-  DESCEND objtool
-  CALL    scripts/atomic/check-atomics.sh
-  CALL    scripts/checksyscalls.sh
-diff: unrecognized option: I
-BusyBox v1.34.1 (2022-02-15 12:03:37 UTC) multi-call binary.
-
-Usage: diff [-abBdiNqrTstw] [-L LABEL] [-S FILE] [-U LINES] FILE1 FILE2
-... (removed lines)
-/usr/include/linux/swab.h:136:23: error: expected ';' before 'unsigned'
-  136 | static __always_inline unsigned long __swab(const unsigned long y)
-      |                       ^~~~~~~~~
-      |                       ;
-/usr/include/linux/swab.h:171:8: error: unknown type name '__always_inline'
-  171 | static __always_inline __u16 __swab16p(const __u16 *p)
-      |        ^~~~~~~~~~~~~~~
-/usr/include/linux/swab.h:171:30: error: expected '=', ',', ';', 'asm' or '__attribute__' before '__swab16p'
-  171 | static __always_inline __u16 __swab16p(const __u16 *p)
-      |                              ^~~~~~~~~
-/usr/include/linux/swab.h:184:8: error: unknown type name '__always_inline'
-  184 | static __always_inline __u32 __swab32p(const __u32 *p)
-... (removed lines)
-make[4]: *** [/root/linux-5.16.4/tools/build/Makefile.build:97: /root/linux-5.16.4/tools/objtool/arch/x86/decode.o] Error 1
-make[3]: *** [/root/linux-5.16.4/tools/build/Makefile.build:139: arch/x86] Error 2
-make[2]: *** [Makefile:56: /root/linux-5.16.4/tools/objtool/objtool-in.o] Error 2
-make[1]: *** [Makefile:69: objtool] Error 2
-make: *** [Makefile:1349: tools/objtool] Error 2
-~/linux-5.16.4 # 
+# [028] Install Kernel Image -
 ```
 
-
-
-
-
+This is for modules
 ```
 make INSTALL_MOD_STRIP=1 modules_install   
 ```
 
-# [028] Install Kernel Image -
-```
 make install
 mv /boot/vmlinuz    /boot/vmlinuz-VERSION
 mv /boot/System.map /boot/System.map-VERSION 
@@ -387,51 +341,15 @@ kiss b baseinit
 UEFI
 
 ```
-kiss b efibootmgr
+kiss b grub 
 ```
-To use efibootmgr and other software to manipulate the UEFI boot entries, the
-efivars filesystem must be mounted. This isn't handled automatically by KISS
-due to the security implications in doing so.
-
+from the host
 ```
-mount -t efivarfs none /sys/firmware/efi/efivars/
+mkdir /mnt/boot/efi
+mount /dev/sda1 /mnt/boot/efi
 ```
-
+from chrooted env
 ```
-efibootmgr \
-	--disk /dev/sda \
-	--part 1 \
-	--create \
-	--label "KISS" \
-	--loader /vmlinuz \
-	--unicode 'root=PARTUUID=a0b9f6a0-4479-8d46-bb4d-e2ab76d00510 rw' \
-	--verbose
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB 
+grub-mkconfig -o /boot/grub/grub.cfg 
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-# BIOS
-
-this is just for BIOS and my case
-
-```
-kiss b grub
-```
-
-```
-grub-install --target=i386-pc /dev/sda
-grub-mkconfig -o /boot/grub/grub.cfg
-```
-
-## [032] Filesystem Utilities
-
-
