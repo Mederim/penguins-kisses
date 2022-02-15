@@ -4,6 +4,7 @@ I'm trying to find a way: still again a work in progress...
 * Created 12/2/2022 forking [Medirim/dotfiles](https://github.com/Mederim/dotfiles)
 * Update 13/2/2022 following [K1SS - KISS Linux 9.2 UEFI Installation - Kernel 5.9.8
 ](https://www.youtube.com/watch?v=kZYcfT0WcCo)
+* Started to follow [Mederim/kiss-waydroid](https://github.com/Mederim/kiss-waydroid)
 
 
 * Update 13/2/2022 following [K1SS - KISS Linux version 2021.7-9 UEFI Installation - Kernel 5.14.8
@@ -113,7 +114,6 @@ KISS_PATH=$KISS_PATH:/var/community/community
 #fi
 ```
 
-
 # [006] Enter The Chroot
 ```
 /mnt/bin/kiss-chroot /mnt
@@ -124,6 +124,10 @@ KISS_PATH=$KISS_PATH:/var/community/community
 ```
 git clone https://github.com/kisslinux/repo
 sudo mv repo /var/
+
+git clone https://github.com/kiss-community/community
+sudo mv community /var
+
 ```
 # [009] Set KISS_PATH
 
@@ -149,7 +153,7 @@ git config merge.verifySignatures true
 
 # [014] Rebuild The System
 # [015] Modify Compiler Flags (Optional)
-We dit it previusly.
+We did it previusly.
 
 ```
 export CFLAGS="-O3 -pipe -march=native"                                |
@@ -203,36 +207,40 @@ Installing some others
 ```
 kiss b e2fsprogs
 kiss b dosfstools
-kiss b xfsprogs
+kiss b xfsprogs // manca
 ```
 device manager
 
 ```
 kiss b util-linux
-kiss b eudev (manca!!!)
+kiss b eudev 
 ```
 
 dhcp
 ```
-kiss b dpcpcd
+kiss b dhcpcd
 mkdir -p /etc/rc.d 
 echo "dhcpcd 2> /dev/null" > /etc/rc.d/dhcpcd.boot
 ```
 hostname
+```
 echo "kisslinux" > /etc/hostname
-
 ```
 kiss b libelf
-kess b ncurses
+kiss b ncurses
 kiss b perl
 ```
 
 # [018] The Kernel
+
+from the host
 ```
-cd /root
-wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.23.tar.xz
-tar xvf linux-5.15.23.tar.xz
-cd linux-5.15.23
+cd /mnt/root
+wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.16.4.tar.xz
+```
+```
+tar xvf linux-5.16.4.tar.xz
+cd linux-5.16.4
 
 ```
 make defconfig
@@ -243,7 +251,6 @@ ci crea .config
 ```
 lspci -k
 ```
-
 
 from make help 
 
@@ -257,73 +264,15 @@ so:
 make localyesconfig
 ```
 
-
-
-
-
-I'm using now a Devuan chimaera kernel 5.10.0-10-amd64, to not get problems with systemd. 
-
-I want to try simply a common Devuan kernel inside, just to have
-a running system.
-
-From live:
+## Puttana EVA!!!
+Compiliamo l'accrocco...
 
 ```
-cp /boot/vmlinuz-5.10.0-10-amd64 /mnt/boot
-cp /boot/config-5.10.0-10-amd64 /mnt/boot
-cp /boot/initrd.img.5.10.0-10-amd64 /mnt/boot
+make -j "$(nproc)"
 ```
 
-## --[019] Download The Kernel Sources
-**SKIP**
 
-## [020] Download Firmware Blobs
-**SKIP**
 
-```
-https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git
-curl -fLO FIRMWARE_SOURCE.tar.gz 
-tar xvf FIRMWARE_SOURCE.tar.gz 
-```
-
-Again this can be stupid and bad, I'm just trying...
-```
-mkdir -p /usr/lib/firmware
-cp -R ./path/to/driver /usr/lib/firmware  
-```
-
-# [021] Configure The Kernel
-**SKIP**
-
-```
-make defconfig 
-make menuconfig 
-cp .config /root
-```
-
-# [022] Install Required Packages
-# [023] perl
-
-```
-$ kiss b perl                                                           |
-```
-
-# [023] libelf
-```
-kiss b libelf
-```
-
-# [025] Build The Kernel
-**SKIP**
-
-```
-make
-```
-## [026] Install The Kernel 
-**SKIP**
-
-## [027] Install Kernel Modules
-**SKIP**
 ```
 make INSTALL_MOD_STRIP=1 modules_install   
 ```
