@@ -252,20 +252,20 @@ ci crea .config
 lspci -k
 ```
 
-from make help 
+from make help, we find the option localyesconfig
 
-see localyesconfig
+### localyesconfig
 ```
  Update current config converting local mods to core except those preserved by LMC_KEEP environment variable
 ```
 
-so:
+so, we use localyesconfig to configure our kernel
 ```
 make localyesconfig
 ```
 
 ## Puttana EVA!!!
-Compiliamo l'accrocco...
+compiling kernel...
 
 ```
 make -j "$(nproc)"
@@ -273,7 +273,8 @@ make -j "$(nproc)"
 
 this we have: :-(
 ```
- make -j4
+# make -j4
+
   DESCEND objtool
   CALL    scripts/atomic/check-atomics.sh
   CALL    scripts/checksyscalls.sh
@@ -281,7 +282,7 @@ diff: unrecognized option: I
 BusyBox v1.34.1 (2022-02-15 12:03:37 UTC) multi-call binary.
 
 Usage: diff [-abBdiNqrTstw] [-L LABEL] [-S FILE] [-U LINES] FILE1 FILE2
-...
+... (removed lines)
 /usr/include/linux/swab.h:136:23: error: expected ';' before 'unsigned'
   136 | static __always_inline unsigned long __swab(const unsigned long y)
       |                       ^~~~~~~~~
@@ -294,7 +295,7 @@ Usage: diff [-abBdiNqrTstw] [-L LABEL] [-S FILE] [-U LINES] FILE1 FILE2
       |                              ^~~~~~~~~
 /usr/include/linux/swab.h:184:8: error: unknown type name '__always_inline'
   184 | static __always_inline __u32 __swab32p(const __u32 *p)
-...
+... (removed lines)
 make[4]: *** [/root/linux-5.16.4/tools/build/Makefile.build:97: /root/linux-5.16.4/tools/objtool/arch/x86/decode.o] Error 1
 make[3]: *** [/root/linux-5.16.4/tools/build/Makefile.build:139: arch/x86] Error 2
 make[2]: *** [Makefile:56: /root/linux-5.16.4/tools/objtool/objtool-in.o] Error 2
