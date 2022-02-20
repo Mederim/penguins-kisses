@@ -285,6 +285,9 @@ make localyesconfig
 
 Enable configs in menu
 
+**IMPORTANT**
+Change your cpu config to your model
+
 ```
 make menuconfig
 ```
