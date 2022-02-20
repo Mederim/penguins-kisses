@@ -3,8 +3,6 @@
 I'm trying to find a way to kisslinux: this is still again a work in progress...
 
 * Created 12/2/2022 forking [Medirim/dotfiles](https://github.com/Mederim/dotfiles)
-* Update 13/2/2022 following [K1SS - KISS Linux 9.2 UEFI Installation - Kernel 5.9.8
-](https://www.youtube.com/watch?v=kZYcfT0WcCo)
 * Update 13/2/2022 following [K1SS - KISS Linux version 2021.7-9 UEFI Installation - Kernel 5.14.8
 ](https://www.youtube.com/watch?v=QCjjFqC-Ve8&t=0s)
 * Started to follow [Mederim/kiss-waydroid](https://github.com/Mederim/kiss-waydroid)
@@ -62,7 +60,7 @@ mkfs.ext4 /dev/sda3
 ```
 mount /dev/sda3 /mnt
 mkdir /mnt/boot
-mount /dev/sda3 /mnt/boot
+mount /dev/sda1 /mnt/boot
 ```
 
 
@@ -98,11 +96,21 @@ cd /mnt
 tar xvf "$OLDPWD/$file"
 ```
 
-From host
+# [006] Enter The Chroot
 ```
-genfstab /mnt >> /mnt/etc/fstab
+/mnt/bin/kiss-chroot /mnt
+```
 
-nano /mnt/etc/profile.d/kiss_path.sh
+Fstab add these lines
+```
+/dev/sda1     /boot         vfat        defaults,noatime     0 2
+/dev/sda2     none          swap        sw                   0 0
+/dev/sda3     /             ext4        noatime              0 1
+```
+
+Making our profile
+```
+vi ~/.profile
 ```
 And copy and past inside:
 
@@ -122,10 +130,11 @@ KISS_PATH=$KISS_PATH:/var/community/community
 #fi
 ```
 
-# [006] Enter The Chroot
+And exec .profile with
 ```
-/mnt/bin/kiss-chroot /mnt
+. ~/.profile
 ```
+
 
 # [007] Setup Official Repositories
 
@@ -206,8 +215,7 @@ change the version 2.6 2 to 2.7 2, then:
 from chroot 
 
 ```
-cd /var/repo/core/pigz
-kiss checksum
+kiss c pigz
 ```
 then, again try to build:
 
@@ -222,17 +230,12 @@ This step involves configuring and building your own Linux kernel. The Linux
 kernel is not managed by the distribution and is instead the user's sole
 responsibility.
 
-I choose the same kernel I have in the live.
-
-from the host
-```
-cd /mnt/root
-wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.16.4.tar.xz
-```
+Use kernel from kernel.org
 
 from chrooted
 ```
-cd root
+cd /var/db/kiss
+curl -fLO https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.16.10.tar.xz
 tar xvf linux-5.16.4.tar.xz
 cd linux-5.16.4
 
@@ -242,13 +245,8 @@ cd linux-5.16.4
 
 ## [021] Configure The Kernel
 
-**IMPORTANT** : Apply this patch before
-
-```
-sed '/<stdlib.h>/a #include <linux/stddef.h>' \
-tools/objtool/arch/x86/decode.c > _
-
-mv -f _ tools/objtool/arch/x86/decode.c    
+``` 
+make defconfig
 ```
 
 ## [022] Install Required Packages
@@ -258,26 +256,91 @@ mv -f _ tools/objtool/arch/x86/decode.c
 kiss b perl
 ```
 ## [024] libelf
+```
 kiss b libelf
+```
+
+Install Python to prevent kernel error
+
+```
+kiss b python
+```
 
 ## [025] Build The Kernel 
 
+```
 make defconfig
 
-
-```
-make -j4
 ```
 
-## [028] Install Kernel Image
+### localyesconfig
+
+See https://youtu.be/QCjjFqC-Ve8?t=1869
+
+Enable all the options in kernel to =y and not =m kiss only use in kernel build enable all
+
+```
+make localyesconfig
+```
+
+Enable configs in menu
+
+```
+make menuconfig
+```
+
+When finish the result of localyesconfig will be
+
+```
+using config: '.config'
+```
+And dont forget to enable  Framebuffer to prevent blackscreen on boot
+
+```
+FB=y and FRAMEBUFFER_CONSOLE=y in your .config
+```
+
+Once finished do the patch
+
+**IMPORTANT** : Apply this patch
+
+```
+sed '/<stdlib.h>/a #include <linux/stddef.h>' \
+tools/objtool/arch/x86/decode.c > _
+
+mv -f _ tools/objtool/arch/x86/decode.c  
+
+```
+
+And now compile
+
+```
+make
+```
+
+This is for modules
+
+```
+make INSTALL_MOD_STRIP=1 modules_install   
+```
+
+# [028] Install Kernel Image 
+
+```
+make install
+mv /boot/vmlinuz    /boot/vmlinuz-5.16.10
+mv /boot/System.map /boot/System.map-5.16.10
+```
 
 
-Installing some others things
+## [028] Installing some others things
+
 ```
 kiss b e2fsprogs
 kiss b dosfstools
 ```
-device manager
+device manager 
+**OPTIONAL SINCE KISS USE MDEV**
 
 ```
 kiss b util-linux
@@ -295,40 +358,6 @@ hostname
 echo "kisslinux" > /etc/hostname
 ```
 
-```
-lspci -k
-```
-
-from make help, we find the option localyesconfig
-
-### localyesconfig
-Update current config converting local mods to core except those preserved by LMC_KEEP environment variable.
-
-
-
-so, we use localyesconfig to configure our kernel
-```
-make localyesconfig
-```
-
-compiling kernel...
-
-```
-make -j "$(nproc)"
-```
-
-# [028] Install Kernel Image -
-```
-
-This is for modules
-```
-make INSTALL_MOD_STRIP=1 modules_install   
-```
-
-make install
-mv /boot/vmlinuz    /boot/vmlinuz-VERSION
-mv /boot/System.map /boot/System.map-VERSION 
-```
 # [029] Install Required Packages
 
 [030] Install init Scripts
@@ -341,15 +370,37 @@ kiss b baseinit
 UEFI
 
 ```
-kiss b grub 
+kiss b grub efibootmgr
 ```
-from the host
-```
-mkdir /mnt/boot/efi
-mount /dev/sda1 /mnt/boot/efi
-```
-from chrooted env
+Install grub for UEFI
 ```
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB 
 grub-mkconfig -o /boot/grub/grub.cfg 
+```
+
+## User and Root
+
+Change root passwd
+
+```
+passwd root
+```
+Add your user
+
+```
+adduser USERNAME
+```
+
+## Finish
+ 
+Exit kiss
+
+```
+exit
+```
+
+And now reboot
+
+```
+reboot
 ```
